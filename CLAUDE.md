@@ -44,7 +44,7 @@ Fallback names also supported: `COUCHDB_URL`, `COUCHDB_USER`, `COUCHDB_PASSWORD`
 
 All source code lives under `src/obsidian_self_mcp/`. There are two entry points that share a common async client:
 
-- **`server.py`** — FastMCP server exposing 13 tools over stdio. Uses a lazy-initialized global `ObsidianClient` singleton.
+- **`server.py`** — FastMCP server exposing 13 tools over stdio. Uses a lazy-initialized global `ObsidianVaultClient` singleton.
 - **`cli.py`** — Argparse CLI (`obsidian` command) with subcommands. Runs async operations via `asyncio.run()`.
 
 Both delegate all CouchDB interaction to:
