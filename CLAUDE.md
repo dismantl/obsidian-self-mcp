@@ -12,8 +12,11 @@ MCP server and CLI for accessing Obsidian vaults through CouchDB (used by Obsidi
 # Install for development (with dev tools: ruff, pytest, respx)
 pip install -e ".[dev]"
 
-# Run MCP server (stdio transport)
+# Run MCP server (stdio transport, default)
 python -m obsidian_self_mcp.server
+
+# Run MCP server (HTTP transport)
+MCP_TRANSPORT=streamable-http python -m obsidian_self_mcp.server
 
 # Run CLI
 obsidian <command> [args]

@@ -69,9 +69,11 @@ export OBSIDIAN_COUCH_DB="obsidian-vault"    # optional, defaults to "obsidian-v
 
 ## MCP Server Setup
 
-### Claude Desktop
+The server supports two transports: **stdio** (default, for local clients) and **streamable-http** (for remote/networked access).
 
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+### Stdio (Claude Desktop / Claude Code)
+
+Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`) or Claude Code settings (`.claude/settings.json`):
 
 ```json
 {
@@ -90,25 +92,34 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 }
 ```
 
-### Claude Code
+### Streamable HTTP
 
-Add to your Claude Code settings (`.claude/settings.json` or global):
+Run as an HTTP server for remote MCP clients:
 
-```json
-{
-  "mcpServers": {
-    "obsidian-self-mcp": {
-      "command": "python",
-      "args": ["-m", "obsidian_self_mcp.server"],
-      "env": {
-        "OBSIDIAN_COUCH_URL": "http://your-couchdb-host:5984",
-        "OBSIDIAN_COUCH_USER": "your-username",
-        "OBSIDIAN_COUCH_PASS": "your-password",
-        "OBSIDIAN_COUCH_DB": "obsidian-vault"
-      }
-    }
-  }
-}
+```bash
+export OBSIDIAN_COUCH_URL="http://your-couchdb-host:5984"
+export OBSIDIAN_COUCH_USER="your-username"
+export OBSIDIAN_COUCH_PASS="your-password"
+export MCP_TRANSPORT="streamable-http"
+export MCP_HOST="0.0.0.0"    # optional, defaults to 0.0.0.0
+export MCP_PORT="8080"        # optional, defaults to 8080
+export MCP_API_KEY="your-secret-key"  # optional, enables Bearer token auth
+python -m obsidian_self_mcp.server
+```
+
+When `MCP_API_KEY` is set, clients must include `Authorization: Bearer your-secret-key` in requests. You can also set `MCP_RESOURCE_URL` to override the OAuth resource server URL (defaults to `http://localhost:{MCP_PORT}`).
+
+### Docker
+
+```bash
+docker build -t obsidian-self-mcp .
+docker run -p 8080:8080 \
+  -e OBSIDIAN_COUCH_URL="http://your-couchdb-host:5984" \
+  -e OBSIDIAN_COUCH_USER="your-username" \
+  -e OBSIDIAN_COUCH_PASS="your-password" \
+  -e MCP_TRANSPORT="streamable-http" \
+  -e MCP_API_KEY="your-secret-key" \
+  obsidian-self-mcp
 ```
 
 ### Available MCP Tools
