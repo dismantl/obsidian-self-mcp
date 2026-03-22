@@ -158,7 +158,11 @@ class ObsidianVaultClient:
         return results
 
     async def read_note(self, path: str) -> NoteContent | None:
-        """Read a note's full content by reassembling chunks in order."""
+        """Read a note's full content by reassembling chunks in order.
+
+        Raises ValueError if any chunks are missing (strict mode — use
+        _read_note_content for bulk scans where skipping broken notes is preferred).
+        """
         doc = await self._get_doc(path)
         if not doc:
             return None
@@ -318,7 +322,7 @@ class ObsidianVaultClient:
             if cid == last_chunk_id:
                 total_size += len(new_data.encode("utf-8"))
             else:
-                total_size += len(chunks.get(cid, "").encode("utf-8"))
+                total_size += len(chunks[cid].encode("utf-8"))
 
         # Update doc
         doc["children"][-1] = new_chunk_id
@@ -483,7 +487,12 @@ class ObsidianVaultClient:
     # ── Tag operations ─────────────────────────────────────────────
 
     async def _read_note_content(self, doc: dict) -> str | None:
-        """Read content from a file doc (fetch + reassemble chunks)."""
+        """Read content from a file doc (fetch + reassemble chunks).
+
+        Unlike read_note, logs a warning and returns None on missing chunks
+        instead of raising — used in bulk scans (list_tags, get_backlinks)
+        where one broken note should not abort the entire operation.
+        """
         chunk_ids = doc.get("children", [])
         if not chunk_ids:
             return None

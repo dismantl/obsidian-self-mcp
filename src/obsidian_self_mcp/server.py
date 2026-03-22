@@ -1,7 +1,8 @@
-"""FastMCP server exposing Obsidian vault tools via stdio transport."""
+"""FastMCP server exposing Obsidian vault tools via stdio or streamable-http transport."""
 
 import functools
 import logging
+import os
 
 import httpx
 from mcp.server.fastmcp import FastMCP
@@ -11,7 +12,41 @@ from .config import Config
 
 logger = logging.getLogger(__name__)
 
-mcp = FastMCP("obsidian-self-mcp")
+_transport = os.environ.get("MCP_TRANSPORT", "stdio")
+_server_kwargs: dict = {}
+
+if _transport == "streamable-http":
+    _server_kwargs["stateless_http"] = True
+    _server_kwargs["json_response"] = True
+
+    _api_key = os.environ.get("MCP_API_KEY", "")
+    if _api_key:
+        from mcp.server.auth.provider import AccessToken, TokenVerifier
+        from mcp.server.auth.settings import AuthSettings
+        from pydantic import AnyHttpUrl
+
+        class _APIKeyVerifier(TokenVerifier):
+            """Verify Bearer tokens against MCP_API_KEY env var."""
+
+            async def verify_token(self, token: str) -> AccessToken | None:
+                if token != _api_key:
+                    return None
+                return AccessToken(
+                    token=token, client_id="api-key", scopes=[], expires_at=None
+                )
+
+        _port = int(os.environ.get("MCP_PORT", "8080"))
+        _resource_url = os.environ.get(
+            "MCP_RESOURCE_URL", f"http://localhost:{_port}"
+        )
+        _server_kwargs["token_verifier"] = _APIKeyVerifier()
+        _server_kwargs["auth"] = AuthSettings(
+            issuer_url=AnyHttpUrl(_resource_url),
+            resource_server_url=AnyHttpUrl(_resource_url),
+            required_scopes=[],
+        )
+
+mcp = FastMCP("obsidian-self-mcp", **_server_kwargs)
 _client: ObsidianVaultClient | None = None
 
 
@@ -268,7 +303,12 @@ async def list_folders() -> str:
 
 
 def main():
-    mcp.run(transport="stdio")
+    if _transport == "streamable-http":
+        host = os.environ.get("MCP_HOST", "0.0.0.0")
+        port = int(os.environ.get("MCP_PORT", "8080"))
+        mcp.run(transport="streamable-http", host=host, port=port)
+    else:
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":

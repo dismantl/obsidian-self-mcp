@@ -16,7 +16,9 @@ class Config:
         os.environ.get("OBSIDIAN_COUCH_PASS", "") or os.environ.get("COUCHDB_PASSWORD", "")
     )
     db_name: str = (
-        os.environ.get("OBSIDIAN_COUCH_DB", "") or os.environ.get("COUCHDB_DB", "obsidian-vault")
+        os.environ.get("OBSIDIAN_COUCH_DB", "")
+        or os.environ.get("COUCHDB_DB", "")
+        or os.environ.get("COUCHDB_DATABASE", "obsidian-vault")
     )
 
     def __post_init__(self):
