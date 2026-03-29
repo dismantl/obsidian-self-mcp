@@ -10,6 +10,7 @@ requires-python = ">=3.10"
 license = "MIT"
 readme = "README.md"
 authors = [
+    { name = "Dan Staples" },
     { name = "Suhas Vemuri" },
 ]
 keywords = ["obsidian", "mcp", "couchdb", "livesync", "cli", "vault"]
@@ -31,9 +32,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/suhasvemuri/obsidian-self-mcp"
-Repository = "https://github.com/suhasvemuri/obsidian-self-mcp"
-Issues = "https://github.com/suhasvemuri/obsidian-self-mcp/issues"
+Homepage = "https://github.com/dismantl/obsidian-self-mcp"
+Repository = "https://github.com/dismantl/obsidian-self-mcp"
+Issues = "https://github.com/dismantl/obsidian-self-mcp/issues"
 
 [project.scripts]
 obsidian = "obsidian_self_mcp.cli:main"

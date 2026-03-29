@@ -50,7 +50,7 @@ pip install obsidian-self-mcp
 Or install from source:
 
 ```bash
-git clone https://github.com/suhasvemuri/obsidian-self-mcp.git
+git clone https://github.com/dismantl/obsidian-self-mcp.git
 cd obsidian-self-mcp
 pip install -e .          # runtime only
 pip install -e ".[dev]"   # with ruff, pytest, respx
