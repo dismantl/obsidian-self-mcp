@@ -6,14 +6,12 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Config:
-    couch_url: str = (
-        os.environ.get("OBSIDIAN_COUCH_URL", "") or os.environ.get("COUCHDB_URL", "")
+    couch_url: str = os.environ.get("OBSIDIAN_COUCH_URL", "") or os.environ.get("COUCHDB_URL", "")
+    couch_user: str = os.environ.get("OBSIDIAN_COUCH_USER", "") or os.environ.get(
+        "COUCHDB_USER", ""
     )
-    couch_user: str = (
-        os.environ.get("OBSIDIAN_COUCH_USER", "") or os.environ.get("COUCHDB_USER", "")
-    )
-    couch_pass: str = (
-        os.environ.get("OBSIDIAN_COUCH_PASS", "") or os.environ.get("COUCHDB_PASSWORD", "")
+    couch_pass: str = os.environ.get("OBSIDIAN_COUCH_PASS", "") or os.environ.get(
+        "COUCHDB_PASSWORD", ""
     )
     db_name: str = (
         os.environ.get("OBSIDIAN_COUCH_DB", "")
@@ -23,9 +21,7 @@ class Config:
 
     def __post_init__(self):
         if not self.couch_url:
-            raise ValueError(
-                "CouchDB URL is required. Set OBSIDIAN_COUCH_URL or COUCHDB_URL."
-            )
+            raise ValueError("CouchDB URL is required. Set OBSIDIAN_COUCH_URL or COUCHDB_URL.")
 
     def __repr__(self) -> str:
         return (

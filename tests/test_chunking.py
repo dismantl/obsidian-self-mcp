@@ -40,6 +40,7 @@ def test_deterministic():
 def test_binary_chunks_are_base64():
     """Binary chunks should be base64-encoded strings."""
     import base64
+
     data = bytes(range(256)) * 40  # ~10KB binary
     chunks = split_chunks(data, is_text=False)
     assert len(chunks) >= 1
@@ -53,7 +54,7 @@ def test_binary_chunks_are_base64():
 def test_utf8_boundary_safety():
     """Should not split in the middle of a multi-byte UTF-8 character."""
     # 4-byte UTF-8: emoji 👋 = F0 9F 91 8B
-    content = ("Hello 👋 world! " * 500)  # ~9KB with emoji
+    content = "Hello 👋 world! " * 500  # ~9KB with emoji
     data = content.encode("utf-8")
     chunks = split_chunks(data, is_text=True)
     # Every chunk must be valid UTF-8

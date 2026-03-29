@@ -21,8 +21,19 @@ from .utils import (
 
 logger = logging.getLogger(__name__)
 BINARY_EXTENSIONS = {
-    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".pdf",
-    ".mp3", ".mp4", ".wav", ".zip", ".tar", ".gz",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".webp",
+    ".svg",
+    ".pdf",
+    ".mp3",
+    ".mp4",
+    ".wav",
+    ".zip",
+    ".tar",
+    ".gz",
 }
 
 
@@ -161,8 +172,7 @@ class ObsidianVaultClient:
         if folder:
             folder_lower = folder.strip("/").lower() + "/"
             all_docs = [
-                d for d in all_docs
-                if d.get("_id", "").lstrip("/").startswith(folder_lower)
+                d for d in all_docs if d.get("_id", "").lstrip("/").startswith(folder_lower)
             ]
 
         # Sort by mtime descending
@@ -170,14 +180,16 @@ class ObsidianVaultClient:
 
         results = []
         for doc in all_docs[skip : skip + limit]:
-            results.append(NoteMetadata(
-                path=doc.get("path", doc["_id"]),
-                size=doc.get("size", 0),
-                ctime=doc.get("ctime", 0),
-                mtime=doc.get("mtime", 0),
-                doc_type=doc.get("type", "plain"),
-                chunk_count=len(doc.get("children", [])),
-            ))
+            results.append(
+                NoteMetadata(
+                    path=doc.get("path", doc["_id"]),
+                    size=doc.get("size", 0),
+                    ctime=doc.get("ctime", 0),
+                    mtime=doc.get("mtime", 0),
+                    doc_type=doc.get("type", "plain"),
+                    chunk_count=len(doc.get("children", [])),
+                )
+            )
         return results
 
     async def read_note(self, path: str) -> NoteContent | None:
@@ -203,9 +215,7 @@ class ObsidianVaultClient:
             # Reassemble in order — fail loudly if chunks are missing
             missing = [cid for cid in chunk_ids if cid not in chunks]
             if missing:
-                raise ValueError(
-                    f"Missing {len(missing)} chunk(s) for {path}: {missing[:3]}"
-                )
+                raise ValueError(f"Missing {len(missing)} chunk(s) for {path}: {missing[:3]}")
             content = "".join(chunks[cid] for cid in chunk_ids)
 
         return NoteContent(
@@ -229,17 +239,12 @@ class ObsidianVaultClient:
             else:
                 folder_counts["(root)"] += 1
 
-        results = [
-            FolderInfo(path=f, note_count=c)
-            for f, c in sorted(folder_counts.items())
-        ]
+        results = [FolderInfo(path=f, note_count=c) for f, c in sorted(folder_counts.items())]
         return results
 
     # ── Write operations ───────────────────────────────────────────
 
-    async def write_note(
-        self, path: str, content: str, is_binary: bool = False
-    ) -> bool:
+    async def write_note(self, path: str, content: str, is_binary: bool = False) -> bool:
         """Create or update a note. Returns True on success."""
         client = await self._get_client()
         vault_path = path.lstrip("/")
@@ -370,9 +375,7 @@ class ObsidianVaultClient:
                 raise ValueError(f"Note was deleted during append: {path}")
             fresh_children = fresh.get("children", [])
             if not fresh_children or fresh_children[-1] != last_chunk_id:
-                raise ValueError(
-                    f"Conflict: note {path} was modified concurrently. Please retry."
-                )
+                raise ValueError(f"Conflict: note {path} was modified concurrently. Please retry.")
             fresh["children"][-1] = new_chunk_id
             fresh["mtime"] = int(time.time() * 1000)
             fresh["size"] = total_size
@@ -407,7 +410,9 @@ class ObsidianVaultClient:
         if failed_chunks:
             logger.warning(
                 "Failed to delete %d chunk(s) for %s: %s",
-                len(failed_chunks), path, failed_chunks[:5],
+                len(failed_chunks),
+                path,
+                failed_chunks[:5],
             )
 
         # Delete the doc
@@ -418,9 +423,7 @@ class ObsidianVaultClient:
             fresh = await self._get_doc(path)
             if fresh:
                 fresh_id = encode_doc_id(fresh["_id"])
-                resp = await client.delete(
-                    f"/{fresh_id}", params={"rev": fresh["_rev"]}
-                )
+                resp = await client.delete(f"/{fresh_id}", params={"rev": fresh["_rev"]})
             else:
                 return True  # Already deleted by another client
         resp.raise_for_status()
@@ -443,6 +446,7 @@ class ObsidianVaultClient:
 
         # Search chunks using Mango query with regex
         import re
+
         query_escaped = re.escape(query)
 
         mango = {
@@ -489,11 +493,13 @@ class ObsidianVaultClient:
         # Build results sorted by match count
         results = []
         for path, snippets in note_matches.items():
-            results.append(SearchResult(
-                path=path,
-                matches=len(snippets),
-                snippets=snippets[:3],  # Cap at 3 snippets per note
-            ))
+            results.append(
+                SearchResult(
+                    path=path,
+                    matches=len(snippets),
+                    snippets=snippets[:3],  # Cap at 3 snippets per note
+                )
+            )
         results.sort(key=lambda r: r.matches, reverse=True)
         return results[:limit]
 
@@ -543,8 +549,7 @@ class ObsidianVaultClient:
         if folder:
             folder_lower = folder.strip("/").lower() + "/"
             all_docs = [
-                d for d in all_docs
-                if d.get("_id", "").lstrip("/").startswith(folder_lower)
+                d for d in all_docs if d.get("_id", "").lstrip("/").startswith(folder_lower)
             ]
 
         tag_counts: dict[str, int] = defaultdict(int)
@@ -567,8 +572,7 @@ class ObsidianVaultClient:
         if folder:
             folder_lower = folder.strip("/").lower() + "/"
             all_docs = [
-                d for d in all_docs
-                if d.get("_id", "").lstrip("/").startswith(folder_lower)
+                d for d in all_docs if d.get("_id", "").lstrip("/").startswith(folder_lower)
             ]
 
         results = []
@@ -581,14 +585,16 @@ class ObsidianVaultClient:
                 continue
             note_tags = [t.lower() for t in extract_tags(content)]
             if tag_lower in note_tags:
-                results.append(NoteMetadata(
-                    path=doc.get("path", doc["_id"]),
-                    size=doc.get("size", 0),
-                    ctime=doc.get("ctime", 0),
-                    mtime=doc.get("mtime", 0),
-                    doc_type=doc.get("type", "plain"),
-                    chunk_count=len(doc.get("children", [])),
-                ))
+                results.append(
+                    NoteMetadata(
+                        path=doc.get("path", doc["_id"]),
+                        size=doc.get("size", 0),
+                        ctime=doc.get("ctime", 0),
+                        mtime=doc.get("mtime", 0),
+                        doc_type=doc.get("type", "plain"),
+                        chunk_count=len(doc.get("children", [])),
+                    )
+                )
                 if len(results) >= limit:
                     break
         return results

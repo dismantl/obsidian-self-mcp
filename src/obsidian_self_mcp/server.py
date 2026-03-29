@@ -33,14 +33,10 @@ if _transport == "streamable-http":
             async def verify_token(self, token: str) -> AccessToken | None:
                 if token != _api_key:
                     return None
-                return AccessToken(
-                    token=token, client_id="api-key", scopes=[], expires_at=None
-                )
+                return AccessToken(token=token, client_id="api-key", scopes=[], expires_at=None)
 
         _port = int(os.environ.get("MCP_PORT", "8080"))
-        _resource_url = os.environ.get(
-            "MCP_RESOURCE_URL", f"http://localhost:{_port}"
-        )
+        _resource_url = os.environ.get("MCP_RESOURCE_URL", f"http://localhost:{_port}")
         _server_kwargs["token_verifier"] = _APIKeyVerifier()
         _server_kwargs["auth"] = AuthSettings(
             issuer_url=AnyHttpUrl(_resource_url),
@@ -82,9 +78,7 @@ def _tool_error_handler(func):
 
 @mcp.tool()
 @_tool_error_handler
-async def list_notes(
-    folder: str | None = None, limit: int = 50, skip: int = 0
-) -> str:
+async def list_notes(folder: str | None = None, limit: int = 50, skip: int = 0) -> str:
     """List notes in the Obsidian vault with metadata.
 
     Args:
@@ -133,9 +127,7 @@ async def write_note(path: str, content: str) -> str:
 
 @mcp.tool()
 @_tool_error_handler
-async def search_notes(
-    query: str, folder: str | None = None, limit: int = 20
-) -> str:
+async def search_notes(query: str, folder: str | None = None, limit: int = 20) -> str:
     """Search note content in the Obsidian vault.
 
     Args:
@@ -239,9 +231,7 @@ async def list_tags(folder: str | None = None) -> str:
 
 @mcp.tool()
 @_tool_error_handler
-async def search_by_tag(
-    tag: str, folder: str | None = None, limit: int = 20
-) -> str:
+async def search_by_tag(tag: str, folder: str | None = None, limit: int = 20) -> str:
     """Find notes containing a specific tag.
 
     Args:

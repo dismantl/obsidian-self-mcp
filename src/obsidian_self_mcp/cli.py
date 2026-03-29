@@ -51,9 +51,7 @@ async def _cmd_write(client: ObsidianVaultClient, args):
 
 
 async def _cmd_search(client: ObsidianVaultClient, args):
-    results = await client.search_notes(
-        query=args.query, folder=args.d, limit=args.n
-    )
+    results = await client.search_notes(query=args.query, folder=args.d, limit=args.n)
     if not results:
         print(f"No results for: {args.query}")
         return
@@ -99,6 +97,7 @@ async def _cmd_props(client: ObsidianVaultClient, args):
             k, v = pair.split("=", 1)
             # Try to parse as JSON for lists/bools/numbers, fall back to string
             import json
+
             try:
                 v = json.loads(v)
             except json.JSONDecodeError:
@@ -117,9 +116,7 @@ async def _cmd_props(client: ObsidianVaultClient, args):
 
 async def _cmd_tags(client: ObsidianVaultClient, args):
     if args.find:
-        notes = await client.search_by_tag(
-            tag=args.find, folder=args.folder, limit=args.n
-        )
+        notes = await client.search_by_tag(tag=args.find, folder=args.folder, limit=args.n)
         if not notes:
             print(f"No notes with tag: #{args.find}")
             return
@@ -233,17 +230,22 @@ def main():
     args = parser.parse_args()
 
     cmd_map = {
-        "list": _cmd_list, "ls": _cmd_list,
-        "read": _cmd_read, "cat": _cmd_read,
+        "list": _cmd_list,
+        "ls": _cmd_list,
+        "read": _cmd_read,
+        "cat": _cmd_read,
         "write": _cmd_write,
-        "search": _cmd_search, "grep": _cmd_search,
+        "search": _cmd_search,
+        "grep": _cmd_search,
         "append": _cmd_append,
-        "delete": _cmd_delete, "rm": _cmd_delete,
+        "delete": _cmd_delete,
+        "rm": _cmd_delete,
         "props": _cmd_props,
         "tags": _cmd_tags,
         "backlinks": _cmd_backlinks,
         "links": _cmd_links,
-        "folders": _cmd_folders, "tree": _cmd_folders,
+        "folders": _cmd_folders,
+        "tree": _cmd_folders,
     }
 
     handler = cmd_map[args.command]

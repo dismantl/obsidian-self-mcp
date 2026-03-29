@@ -73,7 +73,7 @@ def extract_frontmatter(content: str) -> tuple[dict | None, str]:
         return None, content
     if not isinstance(data, dict):
         return None, content
-    body = content[m.end():]
+    body = content[m.end() :]
     return data, body
 
 

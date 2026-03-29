@@ -235,7 +235,7 @@ def test_extract_tags_dedup():
 
 
 def test_extract_tags_strips_hash():
-    content = "---\ntags: [\"#project\"]\n---\nBody"
+    content = '---\ntags: ["#project"]\n---\nBody'
     tags = extract_tags(content)
     assert "project" in tags
 

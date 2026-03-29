@@ -43,9 +43,7 @@ def _make_parent_doc(doc_id, children, **kwargs):
 
 def _mock_get_doc(doc_id_encoded, doc):
     """Mock a successful GET for a document."""
-    respx.get(f"{BASE}/{doc_id_encoded}").mock(
-        return_value=Response(200, json=doc)
-    )
+    respx.get(f"{BASE}/{doc_id_encoded}").mock(return_value=Response(200, json=doc))
 
 
 def _mock_get_doc_404(doc_id_encoded):
@@ -58,17 +56,17 @@ def _mock_get_doc_404(doc_id_encoded):
 def _mock_all_docs(chunks: dict[str, str]):
     """Mock POST _all_docs returning chunk data."""
     rows = [{"id": cid, "doc": {"data": data}} for cid, data in chunks.items()]
-    respx.post(f"{BASE}/_all_docs").mock(
-        return_value=Response(200, json={"rows": rows})
-    )
+    respx.post(f"{BASE}/_all_docs").mock(return_value=Response(200, json={"rows": rows}))
 
 
 def _mock_get_all_file_docs(docs: list[dict]):
     """Mock the two GET /_all_docs calls used by _get_all_file_docs."""
-    respx.get(f"{BASE}/_all_docs").mock(side_effect=[
-        Response(200, json={"rows": [{"doc": d} for d in docs]}),
-        Response(200, json={"rows": []}),
-    ])
+    respx.get(f"{BASE}/_all_docs").mock(
+        side_effect=[
+            Response(200, json={"rows": [{"doc": d} for d in docs]}),
+            Response(200, json={"rows": []}),
+        ]
+    )
 
 
 # ── _get_doc ──────────────────────────────────────────────────────
@@ -219,10 +217,12 @@ async def test_write_note_409_conflict_retry(client):
         return_value=Response(201, json={"ok": True, "rev": "1-new"})
     )
     # First PUT returns 409, second succeeds
-    respx.put(f"{BASE}/notes%2Ftodo.md").mock(side_effect=[
-        Response(409, json={"error": "conflict"}),
-        Response(200, json={"ok": True, "rev": "3-resolved"}),
-    ])
+    respx.put(f"{BASE}/notes%2Ftodo.md").mock(
+        side_effect=[
+            Response(409, json={"error": "conflict"}),
+            Response(200, json={"ok": True, "rev": "3-resolved"}),
+        ]
+    )
     # Refetch on conflict — need to mock the alternate ID too
     respx.get(f"{BASE}/%2Fnotes%2Ftodo.md").mock(
         return_value=Response(404, json={"error": "not_found"})
@@ -237,10 +237,12 @@ async def test_write_note_409_deleted_during_write(client):
     existing = _make_parent_doc("notes/todo.md", ["h:oldchunk0000"])
 
     # First GET returns doc; second GET (refetch after 409) returns 404
-    respx.get(f"{BASE}/notes%2Ftodo.md").mock(side_effect=[
-        Response(200, json=existing),
-        Response(404, json={"error": "not_found"}),
-    ])
+    respx.get(f"{BASE}/notes%2Ftodo.md").mock(
+        side_effect=[
+            Response(200, json=existing),
+            Response(404, json={"error": "not_found"}),
+        ]
+    )
     respx.get(f"{BASE}/%2Fnotes%2Ftodo.md").mock(
         return_value=Response(404, json={"error": "not_found"})
     )
@@ -310,10 +312,12 @@ async def test_append_note_409_conflict_retry(client):
         return_value=Response(201, json={"ok": True, "rev": "1-new"})
     )
     # First PUT returns 409, second succeeds
-    respx.put(f"{BASE}/notes%2Flog.md").mock(side_effect=[
-        Response(409, json={"error": "conflict"}),
-        Response(200, json={"ok": True, "rev": "3-resolved"}),
-    ])
+    respx.put(f"{BASE}/notes%2Flog.md").mock(
+        side_effect=[
+            Response(409, json={"error": "conflict"}),
+            Response(200, json={"ok": True, "rev": "3-resolved"}),
+        ]
+    )
     # Refetch on conflict
     respx.get(f"{BASE}/%2Fnotes%2Flog.md").mock(
         return_value=Response(404, json={"error": "not_found"})
@@ -332,10 +336,12 @@ async def test_append_note_409_concurrent_modification(client):
     )
 
     # First GET returns original; second GET (refetch) returns modified
-    respx.get(f"{BASE}/notes%2Flog.md").mock(side_effect=[
-        Response(200, json=doc),
-        Response(200, json=modified_doc),
-    ])
+    respx.get(f"{BASE}/notes%2Flog.md").mock(
+        side_effect=[
+            Response(200, json=doc),
+            Response(200, json=modified_doc),
+        ]
+    )
     respx.get(f"{BASE}/%2Fnotes%2Flog.md").mock(
         return_value=Response(404, json={"error": "not_found"})
     )
@@ -346,9 +352,7 @@ async def test_append_note_409_concurrent_modification(client):
         return_value=Response(201, json={"ok": True, "rev": "1-new"})
     )
     # PUT returns 409
-    respx.put(f"{BASE}/notes%2Flog.md").mock(
-        return_value=Response(409, json={"error": "conflict"})
-    )
+    respx.put(f"{BASE}/notes%2Flog.md").mock(return_value=Response(409, json={"error": "conflict"}))
 
     with pytest.raises(ValueError, match="modified concurrently"):
         await client.append_note("Notes/log.md", " more")
@@ -367,13 +371,9 @@ async def test_delete_note(client):
         return_value=Response(200, json={"_id": "h:chunk1aaaaaa", "_rev": "1-chk"})
     )
     # Chunk DELETE
-    respx.delete(f"{BASE}/h%3Achunk1aaaaaa").mock(
-        return_value=Response(200, json={"ok": True})
-    )
+    respx.delete(f"{BASE}/h%3Achunk1aaaaaa").mock(return_value=Response(200, json={"ok": True}))
     # Parent DELETE
-    respx.delete(f"{BASE}/notes%2Fold.md").mock(
-        return_value=Response(200, json={"ok": True})
-    )
+    respx.delete(f"{BASE}/notes%2Fold.md").mock(return_value=Response(200, json={"ok": True}))
 
     result = await client.delete_note("Notes/old.md")
     assert result is True
@@ -397,14 +397,14 @@ async def test_delete_note_409_conflict_retry(client):
     respx.get(f"{BASE}/h%3Achunk1aaaaaa").mock(
         return_value=Response(200, json={"_id": "h:chunk1aaaaaa", "_rev": "1-chk"})
     )
-    respx.delete(f"{BASE}/h%3Achunk1aaaaaa").mock(
-        return_value=Response(200, json={"ok": True})
-    )
+    respx.delete(f"{BASE}/h%3Achunk1aaaaaa").mock(return_value=Response(200, json={"ok": True}))
     # Parent DELETE returns 409 first time, then succeeds after refetch
-    respx.delete(f"{BASE}/notes%2Fold.md").mock(side_effect=[
-        Response(409, json={"error": "conflict"}),
-        Response(200, json={"ok": True}),
-    ])
+    respx.delete(f"{BASE}/notes%2Fold.md").mock(
+        side_effect=[
+            Response(409, json={"error": "conflict"}),
+            Response(200, json={"ok": True}),
+        ]
+    )
     # Refetch on conflict
     respx.get(f"{BASE}/%2Fnotes%2Fold.md").mock(
         return_value=Response(404, json={"error": "not_found"})
@@ -419,10 +419,12 @@ async def test_delete_note_409_already_deleted(client):
     doc = _make_parent_doc("notes/old.md", [])
 
     # First GET returns doc; second GET (refetch after 409) returns 404
-    respx.get(f"{BASE}/notes%2Fold.md").mock(side_effect=[
-        Response(200, json=doc),
-        Response(404, json={"error": "not_found"}),
-    ])
+    respx.get(f"{BASE}/notes%2Fold.md").mock(
+        side_effect=[
+            Response(200, json=doc),
+            Response(404, json={"error": "not_found"}),
+        ]
+    )
     respx.get(f"{BASE}/%2Fnotes%2Fold.md").mock(
         return_value=Response(404, json={"error": "not_found"})
     )
@@ -484,21 +486,21 @@ async def test_list_notes_pagination(client):
 
 @respx.mock
 async def test_search_notes(client):
-    parent_doc = _make_parent_doc(
-        "notes/todo.md", ["h:searchchunk0"], path="Notes/todo.md"
-    )
+    parent_doc = _make_parent_doc("notes/todo.md", ["h:searchchunk0"], path="Notes/todo.md")
 
     # _get_all_file_docs mock (two range queries)
-    respx.get(f"{BASE}/_all_docs").mock(side_effect=[
-        Response(200, json={"rows": [{"doc": parent_doc}]}),
-        Response(200, json={"rows": []}),
-    ])
+    respx.get(f"{BASE}/_all_docs").mock(
+        side_effect=[
+            Response(200, json={"rows": [{"doc": parent_doc}]}),
+            Response(200, json={"rows": []}),
+        ]
+    )
 
     # Mango search
     respx.post(f"{BASE}/_find").mock(
-        return_value=Response(200, json={
-            "docs": [{"_id": "h:searchchunk0", "data": "Buy milk and eggs"}]
-        })
+        return_value=Response(
+            200, json={"docs": [{"_id": "h:searchchunk0", "data": "Buy milk and eggs"}]}
+        )
     )
 
     results = await client.search_notes("milk")
@@ -509,13 +511,13 @@ async def test_search_notes(client):
 
 @respx.mock
 async def test_search_notes_no_results(client):
-    respx.get(f"{BASE}/_all_docs").mock(side_effect=[
-        Response(200, json={"rows": []}),
-        Response(200, json={"rows": []}),
-    ])
-    respx.post(f"{BASE}/_find").mock(
-        return_value=Response(200, json={"docs": []})
+    respx.get(f"{BASE}/_all_docs").mock(
+        side_effect=[
+            Response(200, json={"rows": []}),
+            Response(200, json={"rows": []}),
+        ]
     )
+    respx.post(f"{BASE}/_find").mock(return_value=Response(200, json={"docs": []}))
 
     results = await client.search_notes("nonexistent")
     assert results == []
@@ -544,10 +546,12 @@ async def test_list_folders(client):
         _make_parent_doc("notes/b.md", ["h:c2"], path="Notes/b.md"),
         _make_parent_doc("dev/c.md", ["h:c3"], path="Dev/c.md"),
     ]
-    respx.get(f"{BASE}/_all_docs").mock(side_effect=[
-        Response(200, json={"rows": [{"doc": d} for d in docs]}),
-        Response(200, json={"rows": []}),
-    ])
+    respx.get(f"{BASE}/_all_docs").mock(
+        side_effect=[
+            Response(200, json={"rows": [{"doc": d} for d in docs]}),
+            Response(200, json={"rows": []}),
+        ]
+    )
 
     folders = await client.list_folders()
     paths = [f.path for f in folders]
@@ -628,10 +632,12 @@ async def test_list_tags(client):
     doc1 = _make_parent_doc("notes/a.md", ["h:tagchunk0001"])
     doc2 = _make_parent_doc("notes/b.md", ["h:tagchunk0002"])
     _mock_get_all_file_docs([doc1, doc2])
-    _mock_all_docs({
-        "h:tagchunk0001": "---\ntags: [project]\n---\n#urgent text",
-        "h:tagchunk0002": "#project more text",
-    })
+    _mock_all_docs(
+        {
+            "h:tagchunk0001": "---\ntags: [project]\n---\n#urgent text",
+            "h:tagchunk0002": "#project more text",
+        }
+    )
 
     tags = await client.list_tags()
     assert "project" in tags
@@ -733,9 +739,7 @@ async def test_get_outbound_links_binary_returns_empty(client):
 
 @respx.mock
 async def test_get_backlinks(client):
-    source_doc = _make_parent_doc(
-        "notes/source.md", ["h:blchunk00000"], path="Notes/source.md"
-    )
+    source_doc = _make_parent_doc("notes/source.md", ["h:blchunk00000"], path="Notes/source.md")
     _mock_get_all_file_docs([source_doc])
     _mock_all_docs({"h:blchunk00000": "Check out [[Todo]] for tasks"})
 
@@ -747,9 +751,7 @@ async def test_get_backlinks(client):
 
 @respx.mock
 async def test_get_backlinks_no_match(client):
-    source_doc = _make_parent_doc(
-        "notes/source.md", ["h:blchunk00000"], path="Notes/source.md"
-    )
+    source_doc = _make_parent_doc("notes/source.md", ["h:blchunk00000"], path="Notes/source.md")
     _mock_get_all_file_docs([source_doc])
     _mock_all_docs({"h:blchunk00000": "No links here"})
 

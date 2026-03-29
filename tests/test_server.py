@@ -71,9 +71,7 @@ def api_key_verifier():
         async def verify_token(self, token: str) -> AccessToken | None:
             if token != "test-secret":
                 return None
-            return AccessToken(
-                token=token, client_id="api-key", scopes=[], expires_at=None
-            )
+            return AccessToken(token=token, client_id="api-key", scopes=[], expires_at=None)
 
     return TestVerifier()
 
@@ -119,11 +117,13 @@ class TestStreamableHttpConfig:
             _reload_server_module({"MCP_TRANSPORT": "stdio"})
 
     def test_host_port_on_settings_custom(self):
-        mod = _reload_server_module({
-            "MCP_TRANSPORT": "streamable-http",
-            "MCP_HOST": "127.0.0.1",
-            "MCP_PORT": "9090",
-        })
+        mod = _reload_server_module(
+            {
+                "MCP_TRANSPORT": "streamable-http",
+                "MCP_HOST": "127.0.0.1",
+                "MCP_PORT": "9090",
+            }
+        )
         try:
             assert mod.mcp.settings.host == "127.0.0.1"
             assert mod.mcp.settings.port == 9090
@@ -199,9 +199,7 @@ class TestStreamableHttpASGI:
         with TestClient(app) as client:
             # Initialize first (required by protocol)
             client.post("/mcp", json=_INIT_REQUEST, headers=_MCP_HEADERS)
-            resp = client.post(
-                "/mcp", json=_TOOLS_LIST_REQUEST, headers=_MCP_HEADERS
-            )
+            resp = client.post("/mcp", json=_TOOLS_LIST_REQUEST, headers=_MCP_HEADERS)
         assert resp.status_code == 200
         tools = resp.json()["result"]["tools"]
         tool_names = {t["name"] for t in tools}
