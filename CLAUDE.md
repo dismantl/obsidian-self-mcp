@@ -67,13 +67,22 @@ Supporting modules:
 
 ## LiveSync Document Model
 
-Understanding this is essential for working on `client.py` or `utils.py`:
+Understanding this is essential for working on `client.py`, `utils.py`, or `chunking.py`:
 
 - Each note is stored as a **parent document** (CouchDB doc with `_id` = lowercased vault path) containing a `children` array of chunk IDs.
-- **Chunk documents** hold the actual content (`_id` = `"h:" + 12-char alphanumeric`, `type` = `"leaf"`).
-- Text notes are typically one chunk. Binary files are base64-encoded and split into ~10KB chunks.
+- **Chunk documents** hold the actual content (`_id` = `"h:" + xxhash64_base36`, `type` = `"leaf"`). Chunk IDs are content-hash based — same content always produces the same ID.
+- Content is split using **Rabin-Karp V3** content-defined chunking (PRIME=31, window=48 bytes, boundary when `hash % avgChunkSize == 1`). Text avg chunk = max(128B, size/20). Binary avg chunk = max(4KB, size/12).
+- Legacy documents (type `"notes"`) store content directly in a `data` field instead of chunks.
 - Paths starting with `_` (e.g., `_Changelog/`) get a `/` prefix because CouchDB reserves `_`-prefixed IDs.
-- Reads must reassemble chunks in order. Writes must create chunk docs before the parent. Deletes must clean up both.
+- Reads must reassemble chunks in order. Writes must create chunk docs before the parent. Updates clean up orphaned chunks. Deletes must clean up both.
+
+### Required LiveSync Settings
+
+These settings **must** be configured for compatibility:
+- `encrypt: false` — no E2EE support
+- `usePathObfuscation: false` — no path deobfuscation
+- `enableCompression: false` — no DEFLATE decompression
+- `handleFilenameCaseSensitive: false` — doc IDs are always lowercased
 
 ## Key Patterns
 
