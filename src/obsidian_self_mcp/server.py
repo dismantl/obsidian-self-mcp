@@ -16,6 +16,8 @@ _transport = os.environ.get("MCP_TRANSPORT", "stdio")
 _server_kwargs: dict = {}
 
 if _transport == "streamable-http":
+    _server_kwargs["host"] = os.environ.get("MCP_HOST", "0.0.0.0")
+    _server_kwargs["port"] = int(os.environ.get("MCP_PORT", "8080"))
     _server_kwargs["stateless_http"] = True
     _server_kwargs["json_response"] = True
 
@@ -304,9 +306,7 @@ async def list_folders() -> str:
 
 def main():
     if _transport == "streamable-http":
-        host = os.environ.get("MCP_HOST", "0.0.0.0")
-        port = int(os.environ.get("MCP_PORT", "8080"))
-        mcp.run(transport="streamable-http", host=host, port=port)
+        mcp.run(transport="streamable-http")
     else:
         mcp.run(transport="stdio")
 

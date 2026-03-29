@@ -32,6 +32,11 @@ pytest tests/test_utils.py    # run a single test file
 pytest -k test_normalize      # run tests matching a name
 ```
 
+## Testing Patterns
+
+- **ASGI functional tests** — `test_server.py::TestStreamableHttpASGI` uses Starlette `TestClient` to hit the real MCP app in-process (no subprocess/port). Uses `host='0.0.0.0'` to avoid DNS rebinding protection.
+- **Module-level config** — server config is evaluated at import time. Tests that change transport mode must `importlib.reload()` the server module with patched env vars (see `_reload_server_module` helper).
+
 ## Required Environment Variables
 
 ```bash
@@ -72,6 +77,7 @@ Understanding this is essential for working on `client.py` or `utils.py`:
 
 ## Key Patterns
 
+- **Server config** — transport mode (`MCP_TRANSPORT`), host/port, and auth are configured at module level via `FastMCP(...)` constructor kwargs in `_server_kwargs`. `mcp.run()` only takes `transport`.
 - **Conflict handling** — writes retry on HTTP 409 (CouchDB revision conflicts).
 - **Search** — uses CouchDB Mango queries with regex on chunk data, then maps matching chunks back to parent notes via a reverse chunk-to-parent map.
 - **Frontmatter** — parsed via regex extraction of `---\nYAML\n---` blocks, then `yaml.safe_load`.
