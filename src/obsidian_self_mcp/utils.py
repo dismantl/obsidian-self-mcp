@@ -36,12 +36,13 @@ def generate_chunk_id(content: str) -> str:
 
 
 def normalize_doc_id(vault_path: str) -> str:
-    """Convert a vault path to CouchDB doc ID (lowercase).
+    """Convert a vault path to CouchDB doc ID.
 
+    Preserves original casing to match LiveSync's non-obfuscated ID scheme.
     CouchDB reserves IDs starting with '_', so paths like '_Changelog/...'
     get a '/' prefix to match Obsidian LiveSync's convention.
     """
-    doc_id = vault_path.lstrip("/").lower()
+    doc_id = vault_path.lstrip("/")
     # CouchDB rejects doc IDs starting with '_' — prefix with '/'
     if doc_id.startswith("_"):
         doc_id = "/" + doc_id
