@@ -52,20 +52,25 @@ def test_generate_chunk_id_utf16_len():
 
 
 def test_normalize_doc_id_basic():
-    assert normalize_doc_id("Notes/todo.md") == "notes/todo.md"
+    assert normalize_doc_id("Notes/todo.md") == "Notes/todo.md"
 
 
-def test_normalize_doc_id_uppercase():
-    assert normalize_doc_id("Dev Projects/README.md") == "dev projects/readme.md"
+def test_normalize_doc_id_preserves_case():
+    """Doc IDs must preserve original casing for non-obfuscated LiveSync."""
+    assert normalize_doc_id("3 Resources/digests/2026-04-03.md") == "3 Resources/digests/2026-04-03.md"
+
+
+def test_normalize_doc_id_mixed_case():
+    assert normalize_doc_id("Dev Projects/README.md") == "Dev Projects/README.md"
 
 
 def test_normalize_doc_id_underscore_prefix():
     """CouchDB reserves _ prefix — LiveSync prepends /."""
-    assert normalize_doc_id("_Changelog/entry.md") == "/_changelog/entry.md"
+    assert normalize_doc_id("_Changelog/entry.md") == "/_Changelog/entry.md"
 
 
 def test_normalize_doc_id_strips_leading_slash():
-    assert normalize_doc_id("/Notes/todo.md") == "notes/todo.md"
+    assert normalize_doc_id("/Notes/todo.md") == "Notes/todo.md"
 
 
 def test_normalize_doc_id_empty():
