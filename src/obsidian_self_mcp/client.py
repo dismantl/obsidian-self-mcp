@@ -135,7 +135,7 @@ class ObsidianVaultClient:
         content share the same chunk ID. Orphan cleanup on write/delete must
         consult this set before deleting a chunk, or it will break the other notes.
         """
-        all_docs = await self._get_all_file_docs()
+        all_docs = await self._get_all_file_docs(include_deleted=True)
         in_use: set[str] = set()
         for doc in all_docs:
             if doc.get("_id") == exclude_doc_id:
@@ -143,8 +143,13 @@ class ObsidianVaultClient:
             in_use.update(doc.get("children", []))
         return in_use
 
-    async def _get_all_file_docs(self) -> list[dict]:
-        """Fetch all file docs (skip chunks, design docs, index docs)."""
+    async def _get_all_file_docs(self, include_deleted: bool = False) -> list[dict]:
+        """Fetch all file docs (skip chunks, design docs, index docs).
+
+        By default, excludes LiveSync soft-deleted docs (``deleted: True``).
+        Pass ``include_deleted=True`` to include them (e.g. for orphan-chunk
+        bookkeeping where we need the full set).
+        """
         client = await self._get_client()
         docs = []
 
@@ -163,6 +168,8 @@ class ObsidianVaultClient:
             if doc.get("type") in ("plain", "newnote", "notes") and (
                 "children" in doc or "data" in doc
             ):
+                if not include_deleted and doc.get("deleted"):
+                    continue
                 docs.append(doc)
 
         # Range 2: docs after "h:~" (after all chunks)
@@ -179,6 +186,8 @@ class ObsidianVaultClient:
             if doc.get("type") in ("plain", "newnote", "notes") and (
                 "children" in doc or "data" in doc
             ):
+                if not include_deleted and doc.get("deleted"):
+                    continue
                 docs.append(doc)
 
         return docs
@@ -221,7 +230,7 @@ class ObsidianVaultClient:
         _read_note_content for bulk scans where skipping broken notes is preferred).
         """
         doc = await self._get_doc(path)
-        if not doc:
+        if not doc or doc.get("deleted"):
             return None
 
         is_binary = doc.get("type") == "newnote"

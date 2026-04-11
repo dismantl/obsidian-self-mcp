@@ -1165,3 +1165,61 @@ async def test_write_note_orphan_cleanup_failure_nonfatal(client):
     # Write should still succeed
     result = await client.write_note("Notes/todo.md", "Updated content")
     assert result is True
+
+
+# ── soft-delete filtering ────────────────────────────────────────
+
+
+@respx.mock
+async def test_list_notes_excludes_soft_deleted(client):
+    """Notes with LiveSync's ``deleted: True`` flag are hidden from list_notes."""
+    docs = [
+        _make_parent_doc("notes/alive.md", ["h:c1"], path="Notes/alive.md", mtime=3000),
+        _make_parent_doc(
+            "notes/dead.md", ["h:c2"], path="Notes/dead.md", mtime=2000, deleted=True
+        ),
+    ]
+    _mock_get_all_file_docs(docs)
+
+    results = await client.list_notes()
+    assert len(results) == 1
+    assert results[0].path == "Notes/alive.md"
+
+
+@respx.mock
+async def test_list_folders_excludes_soft_deleted(client):
+    """Soft-deleted notes don't contribute to folder counts."""
+    docs = [
+        _make_parent_doc("notes/alive.md", ["h:c1"], path="Notes/alive.md"),
+        _make_parent_doc("notes/dead.md", ["h:c2"], path="Notes/dead.md", deleted=True),
+        _make_parent_doc("dev/ok.md", ["h:c3"], path="Dev/ok.md"),
+    ]
+    _mock_get_all_file_docs(docs)
+
+    folders = await client.list_folders()
+    folder_map = {f.path: f.note_count for f in folders}
+    assert folder_map.get("Notes") == 1
+    assert folder_map.get("Dev") == 1
+
+
+@respx.mock
+async def test_get_all_file_docs_include_deleted(client):
+    """include_deleted=True returns soft-deleted docs (for chunk bookkeeping)."""
+    docs = [
+        _make_parent_doc("notes/alive.md", ["h:c1"]),
+        _make_parent_doc("notes/dead.md", ["h:c2"], deleted=True),
+    ]
+    _mock_get_all_file_docs(docs)
+
+    results = await client._get_all_file_docs(include_deleted=True)
+    assert len(results) == 2
+
+
+@respx.mock
+async def test_read_note_returns_none_for_soft_deleted(client):
+    """read_note treats soft-deleted docs as not found."""
+    doc = _make_parent_doc("notes/dead.md", ["h:c1"], path="Notes/dead.md", deleted=True)
+    _mock_get_doc("notes%2Fdead.md", doc)
+
+    result = await client.read_note("Notes/dead.md")
+    assert result is None
