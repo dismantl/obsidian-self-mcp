@@ -82,7 +82,7 @@ if _transport == "streamable-http":
             required_scopes=[],
         )
 
-mcp = FastMCP("obsidian-self-mcp", **_server_kwargs)
+mcp = FastMCP("obsidian-livesync-mcp", **_server_kwargs)
 
 # Mount OAuth callback route when in OAuth mode
 if _oauth_provider is not None:

@@ -2,7 +2,7 @@
 
 import pytest
 
-from obsidian_self_mcp.config import Config
+from obsidian_livesync_mcp.config import Config
 
 
 def test_oauth_disabled_by_default():

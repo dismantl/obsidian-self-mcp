@@ -10,10 +10,10 @@ import respx
 from cryptography.hazmat.primitives.asymmetric import rsa
 from starlette.testclient import TestClient
 
-from obsidian_self_mcp.config import Config
-from obsidian_self_mcp.oauth_callback import _validate_id_token, handle_oauth_callback
-from obsidian_self_mcp.oauth_provider import OIDCDelegatingProvider
-from obsidian_self_mcp.oauth_store import OAuthStore
+from obsidian_livesync_mcp.config import Config
+from obsidian_livesync_mcp.oauth_callback import _validate_id_token, handle_oauth_callback
+from obsidian_livesync_mcp.oauth_provider import OIDCDelegatingProvider
+from obsidian_livesync_mcp.oauth_store import OAuthStore
 
 ISSUER_URL = "https://auth.example.com"
 

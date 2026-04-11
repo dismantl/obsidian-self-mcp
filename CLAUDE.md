@@ -13,10 +13,10 @@ MCP server and CLI for accessing Obsidian vaults through CouchDB (used by Obsidi
 pip install -e ".[dev]"
 
 # Run MCP server (stdio transport, default)
-python -m obsidian_self_mcp.server
+python -m obsidian_livesync_mcp.server
 
 # Run MCP server (HTTP transport)
-MCP_TRANSPORT=streamable-http python -m obsidian_self_mcp.server
+MCP_TRANSPORT=streamable-http python -m obsidian_livesync_mcp.server
 
 # Run CLI
 obsidian <command> [args]
@@ -60,7 +60,7 @@ OAUTH_AUTHORIZED_EMAIL=you@example.com
 
 ## Architecture
 
-All source code lives under `src/obsidian_self_mcp/`. There are two entry points that share a common async client:
+All source code lives under `src/obsidian_livesync_mcp/`. There are two entry points that share a common async client:
 
 - **`server.py`** — FastMCP server exposing 13 tools over stdio. Uses a lazy-initialized global `ObsidianVaultClient` singleton.
 - **`cli.py`** — Argparse CLI (`obsidian` command) with subcommands. Runs async operations via `asyncio.run()`.

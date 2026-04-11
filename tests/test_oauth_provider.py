@@ -14,9 +14,9 @@ from mcp.server.auth.provider import (
 )
 from mcp.shared.auth import OAuthClientInformationFull
 
-from obsidian_self_mcp.config import Config
-from obsidian_self_mcp.oauth_provider import OIDCDelegatingProvider
-from obsidian_self_mcp.oauth_store import OAuthStore
+from obsidian_livesync_mcp.config import Config
+from obsidian_livesync_mcp.oauth_provider import OIDCDelegatingProvider
+from obsidian_livesync_mcp.oauth_store import OAuthStore
 
 ISSUER_URL = "https://auth.example.com"
 DISCOVERY_URL = f"{ISSUER_URL}/.well-known/openid-configuration"

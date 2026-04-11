@@ -1,11 +1,11 @@
-"""Tests for obsidian_self_mcp.client — async CouchDB client with respx mocking."""
+"""Tests for obsidian_livesync_mcp.client — async CouchDB client with respx mocking."""
 
 import pytest
 import respx
 from httpx import Response
 
-from obsidian_self_mcp.client import ObsidianVaultClient
-from obsidian_self_mcp.config import Config
+from obsidian_livesync_mcp.client import ObsidianVaultClient
+from obsidian_livesync_mcp.config import Config
 
 BASE = "http://test:5984/test-vault"
 

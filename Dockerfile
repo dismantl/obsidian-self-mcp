@@ -6,4 +6,4 @@ RUN pip install --no-cache-dir .
 
 EXPOSE 8080
 
-CMD ["python", "-m", "obsidian_self_mcp.server"]
+CMD ["python", "-m", "obsidian_livesync_mcp.server"]

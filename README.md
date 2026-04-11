@@ -1,8 +1,20 @@
-# obsidian-self-mcp
+# obsidian-livesync-mcp
 
 An MCP server and CLI that gives you direct access to your Obsidian vault through CouchDB — the same database that [Obsidian LiveSync](https://github.com/vrtmrz/obsidian-livesync) uses to sync your notes.
 
 No Obsidian app required. Works on headless servers, in CI pipelines, from AI agents, or anywhere you can run Python.
+
+## Features
+
+- **Full vault CRUD** — read, write, append, delete, and search notes
+- **Frontmatter & tags** — read/update YAML properties, list and search by tag
+- **Backlinks & outbound links** — find connections between notes via content scanning
+- **Two transports** — stdio (local) and streamable-http (remote/networked)
+- **OAuth 2.1** — OIDC-delegating authorization server for remote MCP clients (claude.ai, etc.)
+- **API key auth** — simple Bearer token for headless/CI use
+- **CLI included** — `obsidian` command with subcommands for terminal use
+- **LiveSync-compatible writes** — proper Rabin-Karp V3 chunking, xxhash64 content-addressed IDs
+- **Docker-ready** — single-container deployment
 
 ## How it works
 
@@ -15,25 +27,20 @@ If you use Obsidian LiveSync, your vault is already stored in CouchDB. This tool
 - **AI agent builders** who need to give Claude, GPT, or other agents access to an Obsidian vault via MCP
 - **Automation pipelines** that read/write notes (changelogs, daily notes, project docs)
 
-## How this differs from Obsidian's official CLI
+## Relationship to upstream
 
-Obsidian has an [official CLI](https://obsidian.md/blog/introducing-obsidian-cli/) that requires the Obsidian desktop app running locally and a Catalyst license. This project requires neither — just a CouchDB instance with LiveSync data.
+This is a fork of [suhasvemuri/obsidian-self-mcp](https://github.com/suhasvemuri/obsidian-self-mcp), which provided a basic proof-of-concept. This project has been substantially rewritten with:
 
-| Feature | Official CLI | obsidian-self-mcp |
-|---------|-------------|-------------------|
-| **Requires Obsidian app** | Yes (must be running) | No |
-| **Requires Catalyst license** | Yes ($25+) | No (MIT, free) |
-| **Read/write notes** | Yes | Yes |
-| **Search** | Yes | Yes |
-| **Frontmatter/properties** | Yes | Yes |
-| **Tags** | Yes | Yes |
-| **Backlinks** | Yes (via app index) | Yes (content scanning) |
-| **Templates** | Yes | No (planned) |
-| **Canvas** | Yes | No |
-| **Graph view** | No | No |
-| **Works headless/CI** | No | Yes |
-| **MCP server** | No | Yes |
-| **Transport** | Local REST API | CouchDB (network) |
+- **LiveSync-compatible writes** — the original only read from CouchDB; writes didn't produce valid LiveSync documents. This fork implements proper Rabin-Karp V3 content-defined chunking and xxhash64 content-addressed chunk IDs, so writes sync back to Obsidian correctly.
+- **Correct delete behavior** — the original used CouchDB hard-deletes (`_deleted: true`), which orphaned files on synced devices. Now uses LiveSync soft-delete semantics.
+- **Shared chunk safety** — deletes and updates no longer destroy chunks that are still referenced by other notes.
+- **Soft-delete awareness** — reads and listings filter out LiveSync-deleted notes instead of surfacing tombstones.
+- **OAuth 2.1 support** — full OIDC-delegating authorization server for remote MCP clients.
+- **Streamable HTTP transport** — run as a networked server, not just stdio.
+- **API key authentication** — Bearer token auth for headless deployments.
+- **Comprehensive test suite** — 186 tests covering the client, chunking, OAuth, server, and utilities.
+- **Path handling fixes** — correct case preservation and `_`-prefix escaping for doc IDs.
+- **Docker support** — containerized deployment.
 
 ## Requirements
 
@@ -44,15 +51,15 @@ Obsidian has an [official CLI](https://obsidian.md/blog/introducing-obsidian-cli
 ## Installation
 
 ```bash
-pip install obsidian-self-mcp            # core (stdio + HTTP transport)
-pip install obsidian-self-mcp[oauth]     # with OAuth/OIDC support
+pip install obsidian-livesync-mcp            # core (stdio + HTTP transport)
+pip install obsidian-livesync-mcp[oauth]     # with OAuth/OIDC support
 ```
 
 Or install from source:
 
 ```bash
-git clone https://github.com/dismantl/obsidian-self-mcp.git
-cd obsidian-self-mcp
+git clone https://github.com/dismantl/obsidian-livesync-mcp.git
+cd obsidian-livesync-mcp
 pip install -e .            # runtime only
 pip install -e ".[oauth]"   # with OAuth/OIDC support (pyjwt + cryptography)
 pip install -e ".[dev]"     # with dev tools (ruff, pytest, respx) + OAuth deps
@@ -80,9 +87,9 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 ```json
 {
   "mcpServers": {
-    "obsidian-self-mcp": {
+    "obsidian-livesync-mcp": {
       "command": "python",
-      "args": ["-m", "obsidian_self_mcp.server"],
+      "args": ["-m", "obsidian_livesync_mcp.server"],
       "env": {
         "OBSIDIAN_COUCH_URL": "http://your-couchdb-host:5984",
         "OBSIDIAN_COUCH_USER": "your-username",
@@ -106,7 +113,7 @@ export MCP_TRANSPORT="streamable-http"
 export MCP_HOST="0.0.0.0"    # optional, defaults to 0.0.0.0
 export MCP_PORT="8080"        # optional, defaults to 8080
 export MCP_API_KEY="your-secret-key"  # optional, enables Bearer token auth
-python -m obsidian_self_mcp.server
+python -m obsidian_livesync_mcp.server
 ```
 
 When `MCP_API_KEY` is set, clients must include `Authorization: Bearer your-secret-key` in requests. You can also set `MCP_RESOURCE_URL` to the server's public URL (defaults to `http://localhost:{MCP_PORT}`).
@@ -128,7 +135,7 @@ export OAUTH_CLIENT_ID="your-client-id"         # registered with the OIDC provi
 export OAUTH_CLIENT_SECRET="your-client-secret"  # registered with the OIDC provider
 export OAUTH_AUTHORIZED_EMAIL="you@example.com"  # required: only this email can access
 
-python -m obsidian_self_mcp.server
+python -m obsidian_livesync_mcp.server
 ```
 
 **How it works:**
@@ -140,7 +147,7 @@ python -m obsidian_self_mcp.server
 
 **Setup requirements:**
 
-- Install with OAuth support: `pip install obsidian-self-mcp[oauth]`
+- Install with OAuth support: `pip install obsidian-livesync-mcp[oauth]`
 - Register the MCP server as a client with your OIDC provider
 - Set the redirect URI to `{MCP_RESOURCE_URL}/oauth/callback` (e.g., `https://your-mcp-server.example.com/oauth/callback`)
 - The OIDC provider must include the `email` and `email_verified` claims in ID tokens
@@ -159,14 +166,14 @@ python -m obsidian_self_mcp.server
 ### Docker
 
 ```bash
-docker build -t obsidian-self-mcp .
+docker build -t obsidian-livesync-mcp .
 docker run -p 8080:8080 \
   -e OBSIDIAN_COUCH_URL="http://your-couchdb-host:5984" \
   -e OBSIDIAN_COUCH_USER="your-username" \
   -e OBSIDIAN_COUCH_PASS="your-password" \
   -e MCP_TRANSPORT="streamable-http" \
   -e MCP_API_KEY="your-secret-key" \
-  obsidian-self-mcp
+  obsidian-livesync-mcp
 ```
 
 ### Available MCP Tools

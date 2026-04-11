@@ -1,6 +1,6 @@
-"""Tests for obsidian_self_mcp.chunking — Rabin-Karp content-defined chunking."""
+"""Tests for obsidian_livesync_mcp.chunking — Rabin-Karp content-defined chunking."""
 
-from obsidian_self_mcp.chunking import split_chunks
+from obsidian_livesync_mcp.chunking import split_chunks
 
 
 def test_empty_input():

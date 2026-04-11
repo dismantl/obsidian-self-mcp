@@ -380,7 +380,7 @@ wheels = [
 ]
 
 [[package]]
-name = "obsidian-self-mcp"
+name = "obsidian-livesync-mcp"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

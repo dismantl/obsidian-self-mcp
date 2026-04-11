@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from obsidian_self_mcp.oauth_provider import EphemeralStore
+from obsidian_livesync_mcp.oauth_provider import EphemeralStore
 
 
 @pytest.fixture

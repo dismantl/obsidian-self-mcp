@@ -1,6 +1,6 @@
-"""Tests for obsidian_self_mcp.utils — pure function tests."""
+"""Tests for obsidian_livesync_mcp.utils — pure function tests."""
 
-from obsidian_self_mcp.utils import (
+from obsidian_livesync_mcp.utils import (
     encode_doc_id,
     extract_frontmatter,
     extract_tags,

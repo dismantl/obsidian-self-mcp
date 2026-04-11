@@ -1,6 +1,6 @@
 ---
 name: gen-test
-description: Generate pytest tests for obsidian-self-mcp following project patterns (async httpx, CouchDB fixtures, respx mocking)
+description: Generate pytest tests for obsidian-livesync-mcp following project patterns (async httpx, CouchDB fixtures, respx mocking)
 disable-model-invocation: true
 ---
 
@@ -21,7 +21,7 @@ Generate pytest tests for this project. Follow these conventions:
 
 ```python
 import pytest
-from obsidian_self_mcp.utils import normalize_doc_id
+from obsidian_livesync_mcp.utils import normalize_doc_id
 
 def test_normalize_doc_id_basic():
     assert normalize_doc_id("Notes/todo.md") == "notes/todo.md"
@@ -39,8 +39,8 @@ Mock CouchDB responses with `respx`:
 import pytest
 import respx
 from httpx import Response
-from obsidian_self_mcp.client import ObsidianVaultClient
-from obsidian_self_mcp.config import Config
+from obsidian_livesync_mcp.client import ObsidianVaultClient
+from obsidian_livesync_mcp.config import Config
 
 @pytest.fixture
 def config():

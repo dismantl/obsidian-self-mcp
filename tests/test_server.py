@@ -1,4 +1,4 @@
-"""Tests for obsidian_self_mcp.server — error handler, API key verifier, and ASGI startup."""
+"""Tests for obsidian_livesync_mcp.server — error handler, API key verifier, and ASGI startup."""
 
 import importlib
 from unittest.mock import patch
@@ -8,7 +8,7 @@ import pytest
 from httpx import Request, Response
 from starlette.testclient import TestClient
 
-from obsidian_self_mcp.server import _tool_error_handler
+from obsidian_livesync_mcp.server import _tool_error_handler
 
 # ── _tool_error_handler ──────────────────────────────────────────
 
@@ -98,7 +98,7 @@ async def test_api_key_verifier_empty_token(api_key_verifier):
 
 def _reload_server_module(env_overrides: dict) -> object:
     """Reload the server module with custom env vars to pick up module-level config."""
-    import obsidian_self_mcp.server as mod
+    import obsidian_livesync_mcp.server as mod
 
     with patch.dict("os.environ", env_overrides, clear=False):
         importlib.reload(mod)
@@ -191,7 +191,7 @@ class TestStreamableHttpASGI:
             resp = client.post("/mcp", json=_INIT_REQUEST, headers=_MCP_HEADERS)
         assert resp.status_code == 200
         body = resp.json()
-        assert body["result"]["serverInfo"]["name"] == "obsidian-self-mcp"
+        assert body["result"]["serverInfo"]["name"] == "obsidian-livesync-mcp"
 
     def test_app_lists_registered_tools(self, http_server_module):
         """All 13 MCP tools should be visible through the ASGI app."""

@@ -1,8 +1,8 @@
-"""Tests for obsidian_self_mcp.config — validation and repr."""
+"""Tests for obsidian_livesync_mcp.config — validation and repr."""
 
 import pytest
 
-from obsidian_self_mcp.config import Config
+from obsidian_livesync_mcp.config import Config
 
 
 def test_config_valid():

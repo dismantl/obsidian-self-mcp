@@ -8,7 +8,7 @@ import respx
 from mcp.server.auth.provider import AccessToken, RefreshToken
 from mcp.shared.auth import OAuthClientInformationFull
 
-from obsidian_self_mcp.oauth_store import DESIGN_DOC, OAUTH_DB_NAME, OAuthStore
+from obsidian_livesync_mcp.oauth_store import DESIGN_DOC, OAUTH_DB_NAME, OAuthStore
 
 COUCH_URL = "http://localhost:5984"
 BASE_URL = f"{COUCH_URL}/{OAUTH_DB_NAME}"
